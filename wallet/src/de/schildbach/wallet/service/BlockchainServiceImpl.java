@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nullable;
-
+import com.subgraph.orchid.TorClient;
 import org.bitcoinj.core.AbstractPeerEventListener;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Block;
