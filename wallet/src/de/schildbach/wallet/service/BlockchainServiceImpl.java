@@ -17,6 +17,10 @@
 
 package de.schildbach.wallet.service;
 
+//import com.subgraph.orchid.TorClient;
+//import java.net.InetAddress;
+//import org.bitcoinj.params.MainNetParams;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nullable;
-import com.subgraph.orchid.TorClient;
 import org.bitcoinj.core.AbstractPeerEventListener;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Block;
@@ -407,6 +410,8 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 						if (hasTrustedPeer)
 						{
 							log.info("trusted peer '" + trustedPeerHost + "'" + (connectTrustedPeerOnly ? " only" : ""));
+							MainNetParams mainNetParams = MainNetParams.get();
+							//InetAddress addr = new InetAddress();
 
 							final InetSocketAddress addr = new InetSocketAddress(trustedPeerHost, Constants.NETWORK_PARAMETERS.getPort());
 							if (addr.getAddress() != null)
