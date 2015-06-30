@@ -17,9 +17,11 @@
 
 package de.schildbach.wallet.service;
 
-//import com.subgraph.orchid.TorClient;
-//import java.net.InetAddress;
-//import org.bitcoinj.params.MainNetParams;
+import com.subgraph.orchid.TorClient;
+import java.net.InetAddress;
+
+import org.bitcoinj.core.PeerAddress;
+import org.bitcoinj.params.MainNetParams;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +35,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -410,15 +413,32 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 						if (hasTrustedPeer)
 						{
 							log.info("trusted peer '" + trustedPeerHost + "'" + (connectTrustedPeerOnly ? " only" : ""));
-							MainNetParams mainNetParams = MainNetParams.get();
+							final MainNetParams params = MainNetParams.get();
 							//InetAddress addr = new InetAddress();
-
-							final InetSocketAddress addr = new InetSocketAddress(trustedPeerHost, Constants.NETWORK_PARAMETERS.getPort());
-							if (addr.getAddress() != null)
-							{
-								peers.add(addr);
-								needsTrimPeersWorkaround = true;
-							}
+                            PeerAddress OnionAddr = null;
+                            try {
+                                OnionAddr = new PeerAddress(InetAddress.getByName("5at7sq5nm76xijkd.onion")){
+                                    public InetSocketAddress toSocketAddress(){
+                                        return InetSocketAddress.createUnresolved("5at7sq5nm76xijkd.onion", params.getPort());
+                                    }
+                                };
+                            }catch (java.net.UnknownHostException exc){
+                                System.out.println("Oops, can't get PeerAddress");
+                                exc.printStackTrace();
+                            }
+                            PeerGroup pg = null;
+                            try {
+                                pg = PeerGroup.newWithTor(params,null,new TorClient());
+                            } catch (TimeoutException e) {
+                                e.printStackTrace();
+                            }
+                            pg.addAddress(OnionAddr);
+                            //final InetSocketAddress addr = new InetSocketAddress(trustedPeerHost, Constants.NETWORK_PARAMETERS.getPort());
+							//if (addr.getAddress() != null)
+							//{
+						    //	peers.add(addr);
+							//	needsTrimPeersWorkaround = true;
+							//}
 						}
 
 						if (!connectTrustedPeerOnly)
