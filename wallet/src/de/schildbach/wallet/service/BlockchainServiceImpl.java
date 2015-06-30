@@ -382,9 +382,26 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 					log.error(message);
 					CrashReporter.saveBackgroundTrace(new RuntimeException(message), application.packageInfo());
 				}
+                //final String trustedPeerHost = config.getTrustedPeerHost();
+                //final boolean hasTrustedPeer = !trustedPeerHost.isEmpty();
+                final String trustedPeerHost = "5at7sq5nm76xijkd.onion";
+                final boolean hasTrustedPeer = true;
 
 				log.info("starting peergroup");
-				peerGroup = new PeerGroup(Constants.NETWORK_PARAMETERS, blockChain);
+                if (true){//(trustedPeerHost.substring(trustedPeerHost.length()-6).equals("onion")){
+                    peerGroup = null;
+                    try {
+                        TorClient cli = new TorClient();
+                        //PeerGroup peerGroup2 = PeerGroup.newWithTor(MainNetParams.get(),null,new TorClient());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.exit(0);
+                    }
+                }
+                else{
+                    peerGroup = new PeerGroup(Constants.NETWORK_PARAMETERS, blockChain);
+                }
+
 				peerGroup.setDownloadTxDependencies(false); // recursive implementation causes StackOverflowError
 				peerGroup.addWallet(wallet);
 				peerGroup.setUserAgent(Constants.USER_AGENT, application.packageInfo().versionName);
@@ -392,10 +409,9 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 
 				final int maxConnectedPeers = application.maxConnectedPeers();
 
-				final String trustedPeerHost = config.getTrustedPeerHost();
-				final boolean hasTrustedPeer = !trustedPeerHost.isEmpty();
 
-				final boolean connectTrustedPeerOnly = hasTrustedPeer && config.getTrustedPeerOnly();
+
+				final boolean connectTrustedPeerOnly = hasTrustedPeer;// && config.getTrustedPeerOnly();
 				peerGroup.setMaxConnections(connectTrustedPeerOnly ? 1 : maxConnectedPeers);
 				peerGroup.setConnectTimeoutMillis(Constants.PEER_TIMEOUT_MS);
 
@@ -413,7 +429,9 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 						if (hasTrustedPeer)
 						{
 							log.info("trusted peer '" + trustedPeerHost + "'" + (connectTrustedPeerOnly ? " only" : ""));
-							final MainNetParams params = MainNetParams.get();
+
+							//final MainNetParams params = MainNetParams.get();
+							/*
 							//InetAddress addr = new InetAddress();
                             PeerAddress OnionAddr = null;
                             try {
@@ -433,12 +451,14 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
                                 e.printStackTrace();
                             }
                             pg.addAddress(OnionAddr);
+                            */
                             //final InetSocketAddress addr = new InetSocketAddress(trustedPeerHost, Constants.NETWORK_PARAMETERS.getPort());
-							//if (addr.getAddress() != null)
-							//{
-						    //	peers.add(addr);
-							//	needsTrimPeersWorkaround = true;
-							//}
+                            final InetSocketAddress addr = InetSocketAddress.createUnresolved("5at7sq5nm76xijkd.onion", Constants.NETWORK_PARAMETERS.getPort());
+							if (addr.getAddress() != null)
+							{
+						    	peers.add(addr);
+								needsTrimPeersWorkaround = true;
+							}
 						}
 
 						if (!connectTrustedPeerOnly)
